@@ -1,0 +1,22 @@
+# Python / uv
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Django
+db.sqlite3
+media/
+*.log
+
+# ChromaDB data
+chroma_db/
+
+# IDE
+.idea/
+.vscode/
+*.swp

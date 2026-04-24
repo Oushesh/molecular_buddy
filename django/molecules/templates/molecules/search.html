@@ -1,0 +1,114 @@
+{% extends "molecules/base.html" %}
+{% block title %}Search Similar Molecules – Molecular Buddy{% endblock %}
+
+{% block content %}
+<h1>🔍 Search Similar Molecules</h1>
+<p style="color:#718096;margin-bottom:1.5rem;">
+  Enter a SMILES string to find structurally similar molecules using Morgan fingerprint vector search (Tanimoto similarity).
+</p>
+
+<div class="card" style="max-width:680px;margin-bottom:1.5rem;">
+  <form method="post" id="search-form">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label for="smiles">Query SMILES</label>
+      <input type="text" id="smiles" name="smiles" value="{{ query_smiles }}"
+             placeholder="e.g. CC(=O)Oc1ccccc1C(=O)O" required />
+      <small id="smiles-feedback" style="display:block;margin-top:.3rem;font-size:.8rem;color:#718096;">
+        Enter a valid SMILES representation of the molecule you want to find neighbours for.
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label for="n_results">Number of results</label>
+      <select id="n_results" name="n_results">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+      </select>
+    </div>
+
+    <div style="display:flex;gap:.75rem;">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <a href="{% url 'molecules:index' %}" class="btn btn-secondary">Back</a>
+    </div>
+  </form>
+</div>
+
+{% if searched %}
+  {% if error %}
+    <div class="card" style="max-width:680px;background:#fed7d7;color:#9b2c2c;">
+      <strong>Error:</strong> {{ error }}
+    </div>
+  {% elif results %}
+    <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;margin-bottom:1.5rem;">
+      {% if query_image %}
+      <div class="card" style="text-align:center;flex-shrink:0;">
+        <h2>Query Molecule</h2>
+        <img src="data:image/png;base64,{{ query_image }}" alt="query molecule" style="border:1px solid #e2e8f0;border-radius:6px;max-width:300px;margin-top:.5rem;" />
+        <p style="font-family:monospace;font-size:.8rem;margin-top:.5rem;color:#4a5568;word-break:break-all;">{{ query_smiles }}</p>
+      </div>
+      {% endif %}
+
+      <div style="flex:1;min-width:280px;">
+        <h2>{{ results|length }} Similar Molecule{{ results|length|pluralize }} Found</h2>
+        <p style="font-size:.85rem;color:#718096;margin-bottom:1rem;">Sorted by Tanimoto similarity (higher is more similar).</p>
+
+        <div class="mol-grid">
+          {% for hit in results %}
+          <div class="mol-card">
+            {% if hit.image %}
+              <img src="data:image/png;base64,{{ hit.image }}" alt="{{ hit.name }}" />
+            {% else %}
+              <div style="height:140px;background:#f7fafc;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#a0aec0;font-size:.85rem;border:1px solid #e2e8f0;">No image</div>
+            {% endif %}
+            <h3>{{ hit.name }}</h3>
+            <p class="smiles">{{ hit.smiles|truncatechars:40 }}</p>
+            {% if hit.description %}
+              <p style="font-size:.78rem;color:#4a5568;margin-top:.3rem;">{{ hit.description|truncatechars:50 }}</p>
+            {% endif %}
+            <div style="margin-top:.5rem;">
+              {% if hit.similarity >= 0.7 %}
+                <span class="sim-badge sim-high">{{ hit.similarity|floatformat:3 }}</span>
+              {% elif hit.similarity >= 0.4 %}
+                <span class="sim-badge sim-medium">{{ hit.similarity|floatformat:3 }}</span>
+              {% else %}
+                <span class="sim-badge sim-low">{{ hit.similarity|floatformat:3 }}</span>
+              {% endif %}
+            </div>
+            <div class="actions">
+              <a href="{% url 'molecules:detail' hit.id %}" class="btn btn-secondary" style="font-size:.8rem;">Details</a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  {% else %}
+    <div class="card" style="max-width:680px;">
+      <p>No similar molecules found. <a href="{% url 'molecules:add' %}">Add some molecules</a> to the library first.</p>
+    </div>
+  {% endif %}
+{% endif %}
+
+<script>
+  document.getElementById('smiles').addEventListener('input', function () {
+    const smiles = this.value.trim();
+    if (!smiles) return;
+    fetch(`{% url 'molecules:validate_smiles' %}?smiles=${encodeURIComponent(smiles)}`)
+      .then(r => r.json())
+      .then(data => {
+        const fb = document.getElementById('smiles-feedback');
+        if (data.valid) {
+          fb.textContent = '✅ Valid SMILES';
+          fb.style.color = '#276749';
+        } else {
+          fb.textContent = '❌ Invalid SMILES – please check the string.';
+          fb.style.color = '#9b2c2c';
+        }
+      });
+  });
+</script>
+{% endblock %}

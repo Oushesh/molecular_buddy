@@ -1,0 +1,73 @@
+{% extends "molecules/base.html" %}
+{% block title %}{{ mol.name }} – Molecular Buddy{% endblock %}
+
+{% block content %}
+<a href="{% url 'molecules:index' %}" style="color:#3182ce;font-size:.9rem;">← Back to library</a>
+
+<div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;margin-top:1rem;">
+  <div class="card" style="flex-shrink:0;text-align:center;">
+    {% if image %}
+      <img src="data:image/png;base64,{{ image }}" alt="{{ mol.name }}" style="border:1px solid #e2e8f0;border-radius:8px;max-width:400px;" />
+    {% else %}
+      <div style="width:300px;height:220px;background:#f7fafc;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#a0aec0;border:1px solid #e2e8f0;">No image available</div>
+    {% endif %}
+  </div>
+
+  <div style="flex:1;min-width:260px;">
+    <h1>{{ mol.name }}</h1>
+    <hr />
+    <dl style="font-size:.9rem;line-height:1.9;">
+      <dt style="font-weight:600;color:#4a5568;">SMILES</dt>
+      <dd style="font-family:monospace;word-break:break-all;color:#2d3748;">{{ mol.smiles }}</dd>
+
+      {% if mol.description %}
+      <dt style="font-weight:600;color:#4a5568;margin-top:.75rem;">Description</dt>
+      <dd>{{ mol.description }}</dd>
+      {% endif %}
+
+      <dt style="font-weight:600;color:#4a5568;margin-top:.75rem;">Added</dt>
+      <dd>{{ mol.created_at|date:"N j, Y" }}</dd>
+    </dl>
+
+    <div style="margin-top:1.25rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+      <a href="{% url 'molecules:search' %}?smiles={{ mol.smiles|urlencode }}" class="btn btn-primary">🔍 Find Similar</a>
+      <form method="post" action="{% url 'molecules:delete' mol.pk %}" onsubmit="return confirm('Delete {{ mol.name }}?')" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% if similar %}
+<div style="margin-top:2rem;">
+  <h2>🧬 Similar Molecules</h2>
+  <p style="color:#718096;font-size:.875rem;margin-bottom:1rem;">Most structurally similar molecules in the library (Tanimoto similarity).</p>
+  <div class="mol-grid">
+    {% for hit in similar %}
+    <div class="mol-card">
+      {% if hit.image %}
+        <img src="data:image/png;base64,{{ hit.image }}" alt="{{ hit.name }}" />
+      {% else %}
+        <div style="height:140px;background:#f7fafc;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#a0aec0;font-size:.85rem;border:1px solid #e2e8f0;">No image</div>
+      {% endif %}
+      <h3>{{ hit.name }}</h3>
+      <p class="smiles">{{ hit.smiles|truncatechars:40 }}</p>
+      <div style="margin-top:.5rem;">
+        {% if hit.similarity >= 0.7 %}
+          <span class="sim-badge sim-high">{{ hit.similarity|floatformat:3 }}</span>
+        {% elif hit.similarity >= 0.4 %}
+          <span class="sim-badge sim-medium">{{ hit.similarity|floatformat:3 }}</span>
+        {% else %}
+          <span class="sim-badge sim-low">{{ hit.similarity|floatformat:3 }}</span>
+        {% endif %}
+      </div>
+      <div class="actions">
+        <a href="{% url 'molecules:detail' hit.id %}" class="btn btn-secondary" style="font-size:.8rem;">Details</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

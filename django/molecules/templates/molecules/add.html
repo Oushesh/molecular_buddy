@@ -1,0 +1,95 @@
+{% extends "molecules/base.html" %}
+{% block title %}Add Molecule – Molecular Buddy{% endblock %}
+
+{% block content %}
+<h1>➕ Add a Molecule</h1>
+
+<div class="card" style="max-width:600px;">
+  <form method="post" id="add-form">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label for="name">Molecule name</label>
+      <input type="text" id="name" name="name" value="{{ name|default:'' }}" placeholder="e.g. Aspirin" required />
+    </div>
+
+    <div class="form-group">
+      <label for="smiles">SMILES string</label>
+      <input type="text" id="smiles" name="smiles" value="{{ smiles|default:'' }}"
+             placeholder="e.g. CC(=O)Oc1ccccc1C(=O)O" required />
+      <small id="smiles-feedback" style="display:block;margin-top:.3rem;font-size:.8rem;color:#718096;">
+        Enter a valid SMILES representation of the molecule.
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description <span style="font-weight:400;color:#718096;">(optional)</span></label>
+      <textarea id="description" name="description" rows="3" placeholder="Short description...">{{ description|default:'' }}</textarea>
+    </div>
+
+    <div id="preview" style="margin-bottom:1.2rem;display:none;">
+      <label>Preview</label>
+      <img id="preview-img" src="" alt="molecule preview" style="border:1px solid #e2e8f0;border-radius:6px;max-width:300px;margin-top:.4rem;display:block;" />
+    </div>
+
+    <div style="display:flex;gap:.75rem;">
+      <button type="submit" class="btn btn-success">Save Molecule</button>
+      <a href="{% url 'molecules:index' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<div class="card" style="max-width:600px;margin-top:1.5rem;">
+  <h2>💡 Example SMILES</h2>
+  <table style="width:100%;font-size:.875rem;border-collapse:collapse;">
+    <thead>
+      <tr style="background:#f7fafc;">
+        <th style="text-align:left;padding:.5rem .75rem;border-bottom:1px solid #e2e8f0;">Name</th>
+        <th style="text-align:left;padding:.5rem .75rem;border-bottom:1px solid #e2e8f0;">SMILES</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding:.4rem .75rem;">Aspirin</td><td style="padding:.4rem .75rem;font-family:monospace;cursor:pointer;" onclick="fillSmiles(this,'Aspirin')">CC(=O)Oc1ccccc1C(=O)O</td></tr>
+      <tr><td style="padding:.4rem .75rem;">Caffeine</td><td style="padding:.4rem .75rem;font-family:monospace;cursor:pointer;" onclick="fillSmiles(this,'Caffeine')">Cn1c(=O)c2c(ncn2C)n(c1=O)C</td></tr>
+      <tr><td style="padding:.4rem .75rem;">Ibuprofen</td><td style="padding:.4rem .75rem;font-family:monospace;cursor:pointer;" onclick="fillSmiles(this,'Ibuprofen')">CC(C)Cc1ccc(cc1)C(C)C(=O)O</td></tr>
+      <tr><td style="padding:.4rem .75rem;">Paracetamol</td><td style="padding:.4rem .75rem;font-family:monospace;cursor:pointer;" onclick="fillSmiles(this,'Paracetamol')">CC(=O)Nc1ccc(O)cc1</td></tr>
+      <tr><td style="padding:.4rem .75rem;">Dopamine</td><td style="padding:.4rem .75rem;font-family:monospace;cursor:pointer;" onclick="fillSmiles(this,'Dopamine')">NCCc1ccc(O)c(O)c1</td></tr>
+      <tr><td style="padding:.4rem .75rem;">Glucose</td><td style="padding:.4rem .75rem;font-family:monospace;cursor:pointer;" onclick="fillSmiles(this,'Glucose')">OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:.8rem;color:#718096;margin-top:.75rem;">Click any SMILES to fill the form.</p>
+</div>
+
+<script>
+  function fillSmiles(cell, name) {
+    document.getElementById('smiles').value = cell.textContent.trim();
+    if (!document.getElementById('name').value) {
+      document.getElementById('name').value = name;
+    }
+    validateAndPreview();
+  }
+
+  function validateAndPreview() {
+    const smiles = document.getElementById('smiles').value.trim();
+    if (!smiles) {
+      document.getElementById('preview').style.display = 'none';
+      return;
+    }
+    fetch(`{% url 'molecules:validate_smiles' %}?smiles=${encodeURIComponent(smiles)}`)
+      .then(r => r.json())
+      .then(data => {
+        const fb = document.getElementById('smiles-feedback');
+        if (data.valid) {
+          fb.textContent = '✅ Valid SMILES';
+          fb.style.color = '#276749';
+        } else {
+          fb.textContent = '❌ Invalid SMILES – please check the string.';
+          fb.style.color = '#9b2c2c';
+          document.getElementById('preview').style.display = 'none';
+        }
+      });
+  }
+
+  document.getElementById('smiles').addEventListener('input', validateAndPreview);
+</script>
+{% endblock %}
