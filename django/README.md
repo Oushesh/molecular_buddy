@@ -32,19 +32,22 @@ A Django web application for **vector search on molecules**. It stores molecular
 ## Quickstart (with `uv`)
 
 ```bash
-# 1 – Install uv (if not already installed)
+
+# 1- Go the root folder
+cd django
+# 2 – Install uv (if not already installed)
 pip install uv
 
-# 2 – Install dependencies
+# 3 – Install dependencies
 uv sync
 
-# 3 – Run database migrations
+# 4 – Run database migrations
 uv run python manage.py migrate
 
-# 4 – (Optional) Seed with sample molecules
+# 5 – (Optional) Seed with sample molecules
 uv run python manage.py seed_molecules
 
-# 5 – Start the development server
+# 6 – Start the development server
 uv run python manage.py runserver
 ```
 
