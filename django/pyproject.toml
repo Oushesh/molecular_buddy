@@ -1,0 +1,14 @@
+[project]
+name = "molecular-buddy"
+version = "0.1.0"
+description = "Vector search on molecules – find similar molecules using molecular fingerprints."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "django>=4.2",
+    "numpy>=1.24",
+    "scikit-learn>=1.3",
+    "chromadb>=0.4",
+    "pillow>=10.0",
+    "rdkit>=2026.3.1",
+]

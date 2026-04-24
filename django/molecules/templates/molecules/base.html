@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Molecular Buddy{% endblock %}</title>
+  <style>
+    /* ---- Reset & base ---- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f4f8; color: #2d3748; min-height: 100vh; }
+
+    /* ---- Nav ---- */
+    nav { background: #1a365d; color: #fff; padding: .75rem 2rem; display: flex; align-items: center; gap: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,.3); }
+    nav a { color: #bee3f8; text-decoration: none; font-weight: 500; transition: color .2s; }
+    nav a:hover { color: #fff; }
+    nav .brand { font-size: 1.25rem; font-weight: 700; color: #fff; }
+
+    /* ---- Layout ---- */
+    main { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
+
+    /* ---- Cards ---- */
+    .card { background: #fff; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+
+    /* ---- Molecule grid ---- */
+    .mol-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.25rem; }
+    .mol-card { background: #fff; border-radius: 10px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); text-align: center; transition: transform .15s, box-shadow .15s; }
+    .mol-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+    .mol-card img { max-width: 100%; border-radius: 6px; border: 1px solid #e2e8f0; }
+    .mol-card h3 { margin-top: .6rem; font-size: .95rem; color: #2d3748; }
+    .mol-card .smiles { font-size: .75rem; color: #718096; word-break: break-all; margin-top: .2rem; }
+    .mol-card .actions { margin-top: .6rem; display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; }
+
+    /* ---- Buttons ---- */
+    .btn { display: inline-block; padding: .45rem 1rem; border-radius: 6px; font-size: .875rem; font-weight: 500; cursor: pointer; border: none; text-decoration: none; transition: background .2s; }
+    .btn-primary { background: #3182ce; color: #fff; }
+    .btn-primary:hover { background: #2b6cb0; }
+    .btn-success { background: #38a169; color: #fff; }
+    .btn-success:hover { background: #2f855a; }
+    .btn-danger { background: #e53e3e; color: #fff; }
+    .btn-danger:hover { background: #c53030; }
+    .btn-secondary { background: #718096; color: #fff; }
+    .btn-secondary:hover { background: #4a5568; }
+
+    /* ---- Forms ---- */
+    form .form-group { margin-bottom: 1.2rem; }
+    form label { display: block; font-weight: 500; margin-bottom: .3rem; color: #4a5568; }
+    form input, form textarea, form select { width: 100%; padding: .55rem .75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: .95rem; transition: border-color .2s; }
+    form input:focus, form textarea:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49,130,206,.2); }
+
+    /* ---- Messages ---- */
+    .messages { list-style: none; margin-bottom: 1.5rem; }
+    .messages li { padding: .75rem 1rem; border-radius: 6px; margin-bottom: .5rem; font-size: .9rem; }
+    .messages .success { background: #c6f6d5; color: #276749; }
+    .messages .error   { background: #fed7d7; color: #9b2c2c; }
+    .messages .warning { background: #fefcbf; color: #744210; }
+    .messages .info    { background: #bee3f8; color: #2a4365; }
+
+    /* ---- Similarity badge ---- */
+    .sim-badge { display: inline-block; padding: .2rem .55rem; border-radius: 9999px; font-size: .8rem; font-weight: 600; }
+    .sim-high   { background: #c6f6d5; color: #276749; }
+    .sim-medium { background: #fefcbf; color: #744210; }
+    .sim-low    { background: #fed7d7; color: #9b2c2c; }
+
+    /* ---- Misc ---- */
+    h1 { font-size: 1.75rem; margin-bottom: 1rem; color: #1a365d; }
+    h2 { font-size: 1.3rem; margin-bottom: .75rem; color: #2d3748; }
+    .empty-state { text-align: center; padding: 3rem; color: #718096; }
+    .empty-state p { font-size: 1.1rem; margin-bottom: 1rem; }
+    hr { border: none; border-top: 1px solid #e2e8f0; margin: 1.5rem 0; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="{% url 'molecules:index' %}" class="brand">🧬 Molecular Buddy</a>
+    <a href="{% url 'molecules:index' %}">Molecules</a>
+    <a href="{% url 'molecules:add' %}">+ Add</a>
+    <a href="{% url 'molecules:search' %}">🔍 Search</a>
+  </nav>
+
+  <main>
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
